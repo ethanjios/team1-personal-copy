@@ -1,0 +1,77 @@
+import 'dotenv/config';
+import cookieParser from 'cookie-parser';
+import express from 'express';
+import nunjucks from 'nunjucks';
+import ApplicationController from './controllers/ApplicationController';
+import { AuthenticateController } from './controllers/AuthenticateController';
+import JobRoleController from './controllers/JobRoleController';
+import authenticationRouter from './router/AuthenticateRouter';
+import ApplicationService from './services/ApplicationService';
+import { JobRoleService } from './services/JobRoleService';
+import { LoginService } from './services/LoginService';
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+// Middleware
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// Configure Nunjucks
+nunjucks.configure('views', {
+  autoescape: true,
+  express: app,
+});
+
+app.set('view engine', 'njk');
+
+// Static files
+app.use(express.static('public'));
+
+// Auth routes
+const loginService = new LoginService();
+const authenticationController = new AuthenticateController(loginService);
+app.use(authenticationRouter(authenticationController));
+
+// Routes
+app.get('/', (req, res) => {
+  res.redirect('/login');
+});
+
+app.get('/application-success', (req, res) => {
+  res.render('application-success', {
+    title: 'Application Submitted - Kainos Job Roles',
+  });
+});
+
+app.get('/login', (req, res) => {
+  res.render('login', {
+    title: 'Sign In - Kainos Job Roles',
+  });
+});
+
+app.get('/health', (req, res) => {
+  res.json({ status: 'OK' });
+});
+
+const jobRoleService = new JobRoleService();
+const applicationController = new ApplicationController(
+  new ApplicationService(),
+);
+
+JobRoleController(app, jobRoleService);
+
+// Leave last so it catches all unmatched routes and renders a 404 page
+app.use((req, res) => {
+  res.status(404).render('404', {
+    title: '404 - Page Not Found',
+  });
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Frontend running on port ${PORT}`);
+});
+
+export default app;

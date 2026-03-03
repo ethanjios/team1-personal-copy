@@ -1,0 +1,66 @@
+{
+  "name": "team1-back-app",
+  "version": "1.0.0",
+  "description": "Team 1 Backend Application Feb/March 2026",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "check": "biome check .",
+    "check:fix": "biome check . --write",
+    "db:migrate": "npx prisma migrate deploy",
+    "db:seed": "npx tsx prisma/test-scripts/seed-test-db-v2.ts",
+    "db:query": "npx tsx prisma/test-scripts/query-test-db-v2.ts",
+    "db:test:migrate": "npx dotenv -e .env.test -- prisma migrate dev",
+    "db:test:seed": "npx dotenv -e .env.test -- tsx prisma/test-scripts/seed-test-db-v2.ts",
+    "db:test:query": "npx dotenv -e .env.test -- tsx prisma/test-scripts/query-test-db-v2.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GarethNelsonKainos/team1-back-app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/GarethNelsonKainos/team1-back-app/issues"
+  },
+  "homepage": "https://github.com/GarethNelsonKainos/team1-back-app#readme",
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.990.0",
+    "@aws-sdk/s3-request-presigner": "^3.990.0",
+    "@prisma/adapter-pg": "^7.3.0",
+    "@prisma/client": "^7.3.0",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.0.2",
+    "pg": "^8.18.0",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^25.2.2",
+    "@types/pg": "^8.16.0",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^1.3.1",
+    "dotenv": "^17.2.4",
+    "dotenv-cli": "^11.0.0",
+    "prisma": "^7.3.0",
+    "supertest": "^7.2.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^1.3.1"
+  }
+}

@@ -1,0 +1,49 @@
+{% extends "layout.njk" %}
+
+{% block content %}
+    <div class="max-w-md mx-auto bg-white rounded-lg shadow-md p-8 mt-8">
+        <h1 class="text-3xl font-bold mb-8 text-center" style="color: var(--brand-primary);">Sign In</h1>
+        
+        {% if error %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                <span>{{ error }}</span>
+            </div>
+        {% endif %}
+
+        <form action="/login" method="POST" class="space-y-6">
+            <div>
+                <label for="email" class="block text-sm font-semibold mb-2" style="color: var(--brand-primary);">Email Address</label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    required 
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50" 
+                    style="border-color: var(--brand-primary); focus:ring-color: var(--brand-primary);"
+                    placeholder="Enter your email address"
+                >
+            </div>
+            
+            <div>
+                <label for="password" class="block text-sm font-semibold mb-2" style="color: var(--brand-primary);">Password</label>
+                <input 
+                    type="password" 
+                    id="password" 
+                    name="password" 
+                    required 
+                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-opacity-50" 
+                    style="border-color: var(--brand-primary); focus:ring-color: var(--brand-primary);"
+                    placeholder="Enter your password"
+                >
+            </div>
+            
+            <button 
+                type="submit" 
+                class="w-full py-3 px-4 rounded-lg text-white font-semibold hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-opacity-50" 
+                style="background-color: var(--brand-primary); focus:ring-color: var(--brand-primary);"
+            >
+                Sign In
+            </button>
+        </form>
+    </div>
+{% endblock %}

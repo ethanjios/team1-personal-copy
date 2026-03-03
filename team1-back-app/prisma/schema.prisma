@@ -1,0 +1,96 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+model Capability {
+  capabilityId   Int       @id @default(autoincrement())
+  capabilityName String @unique
+  jobRoles       JobRole[]
+}
+
+model Band {
+  bandId   Int       @id @default(autoincrement())
+  bandName String @unique
+  jobRoles JobRole[]
+}
+
+model JobRole {
+  jobRoleId   Int                @id @default(autoincrement())
+  roleName    String @unique
+  capabilityId Int
+  bandId      Int
+  closingDate DateTime
+  jobRoleStatusId Int
+  jobSpecLink      String?           
+  openPositions    Int?             
+  description      String?          
+  responsibilities String? 
+  capability  Capability         @relation(fields: [capabilityId], references: [capabilityId])
+  band        Band               @relation(fields: [bandId], references: [bandId])
+  status      JobRoleStatus      @relation(fields: [jobRoleStatusId], references: [jobRoleStatusId])
+  locations   JobRoleLocation[]
+  applications Application[]
+}
+
+model Location {
+  locationId   Int               @id @default(autoincrement())
+  locationName String @unique
+  city         String
+  country      String
+  jobRoles     JobRoleLocation[]
+}
+
+model JobRoleLocation {
+  jobRoleId  Int
+  locationId Int
+  jobRole    JobRole  @relation(fields: [jobRoleId], references: [jobRoleId], onDelete: Cascade)
+  location   Location @relation(fields: [locationId], references: [locationId])
+
+  @@id([jobRoleId, locationId])
+}
+
+model UserType {
+  userTypeId   Int    @id @default(autoincrement())
+  userTypeDesc String @unique
+  users        User[]
+}
+
+model User {
+  userId       Int           @id @default(autoincrement())
+  firstName    String
+  lastName     String
+  userEmail    String        @unique
+  userPassword String
+  userTypeId   Int
+  userType     UserType      @relation(fields: [userTypeId], references: [userTypeId])
+  applications Application[]
+}
+
+model ApplicationStatus {
+  applicationStatusId   Int           @id @default(autoincrement())
+  applicationStatusType String @unique
+  applications          Application[]
+}
+
+model JobRoleStatus {
+  jobRoleStatusId Int      @id @default(autoincrement())
+  statusName      String @unique
+  jobRoles        JobRole[]
+}
+
+model Application {
+  applicationId       Int               @id @default(autoincrement())
+  userId              Int
+  jobRoleId           Int
+  applicationStatusId Int
+  cvUrl               String?
+  createdAt           DateTime          @default(now())
+  user                User              @relation(fields: [userId], references: [userId])
+  jobRole             JobRole           @relation(fields: [jobRoleId], references: [jobRoleId], onDelete: Cascade)
+  status              ApplicationStatus @relation(fields: [applicationStatusId], references: [applicationStatusId])
+}

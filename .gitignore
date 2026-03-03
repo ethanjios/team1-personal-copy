@@ -1,0 +1,32 @@
+# Dependencies
+**/node_modules/
+
+# Build output
+**/dist/
+
+# Environment files - contain secrets
+**/.env
+**/.env.*
+!**/.env.example
+
+# Test secrets
+**/.secrets
+
+# Terraform - secrets and local state
+**/.terraform/
+**/*.tfstate
+**/*.tfstate.backup
+**/*.tfstate.lock.info
+**/terraform.tfvars
+**/terraform.tfvars.json
+**/backend.hcl
+
+# Coverage reports
+**/coverage/
+
+# Test output
+**/test-results/
+**/playwright-report/
+
+# macOS
+.DS_Store
