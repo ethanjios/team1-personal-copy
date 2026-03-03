@@ -1,0 +1,4 @@
+subscription_id = "your-azure-subscription-id"
+location        = "uksouth"
+project         = "team1"
+environment     = "dev"
