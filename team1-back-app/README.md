@@ -56,7 +56,7 @@ DB_SCHEMA=public
 ```bash
 npx prisma generate
 ```
-
+ 
 5. **Create local copy of the database**
 ```bash
 npm run db:migrate
