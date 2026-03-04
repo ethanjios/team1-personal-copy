@@ -1,4 +1,16 @@
 subscription_id = "your-azure-subscription-id"
 location        = "uksouth"
-project         = "team1"
+project         = "team1-ethan-campbell"
 environment     = "dev"
+
+# ACR — shared Academy registry
+acr_name                = "academyacrj3r5dv"
+acr_resource_group_name = "rg-academy-acr"
+
+# Container images (defaults to :latest, override to pin a specific SHA)
+backend_image  = "ethan-campbell/team1-back-app:latest"
+frontend_image = "ethan-campbell/team1-front-app:latest"
+
+# Feature flags — "true" or "false"
+enable_job_applications = "false"
+enable_add_job_role     = "false"
