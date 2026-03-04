@@ -4,10 +4,6 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 3.0"
     }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
-    }
   }
 
   backend "azurerm" {
@@ -68,61 +64,6 @@ module "key_vault" {
 }
 
 # ---------------------------------------------------------------
-# PostgreSQL Flexible Server
-# ---------------------------------------------------------------
-module "postgres" {
-  source = "./modules/postgres"
-
-  server_name         = "psql-${var.project}-${var.environment}"
-  resource_group_name = module.resource_group.name
-  location            = var.location
-  admin_login         = "team1admin"
-  db_name             = "team1"
-
-  tags = local.tags
-}
-
-# ---------------------------------------------------------------
-# DB secrets in Key Vault — managed by Terraform
-# Overwrites the placeholder values set during initial setup
-# ---------------------------------------------------------------
-resource "azurerm_key_vault_secret" "db_host" {
-  name         = "DbHost"
-  value        = module.postgres.fqdn
-  key_vault_id = module.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "db_port" {
-  name         = "DbPort"
-  value        = tostring(module.postgres.port)
-  key_vault_id = module.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "db_user" {
-  name         = "DbUser"
-  value        = module.postgres.admin_login
-  key_vault_id = module.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "db_password" {
-  name         = "DbPassword"
-  value        = module.postgres.admin_password
-  key_vault_id = module.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "db_name" {
-  name         = "DbName"
-  value        = module.postgres.db_name
-  key_vault_id = module.key_vault.id
-}
-
-resource "azurerm_key_vault_secret" "db_schema" {
-  name         = "DbSchema"
-  value        = "public"
-  key_vault_id = module.key_vault.id
-}
-
-# ---------------------------------------------------------------
 # User-Assigned Managed Identity
 # Used by Container Apps to pull images from ACR and read secrets from Key Vault
 # ---------------------------------------------------------------
@@ -178,6 +119,7 @@ module "container_apps" {
 
   backend_name                 = "back-${local.short_id}-${var.environment}"
   frontend_name                = "front-${local.short_id}-${var.environment}"
+  postgres_name                = "db-${local.short_id}-${var.environment}"
   resource_group_name          = module.resource_group.name
   container_app_environment_id = module.container_app_environment.id
   managed_identity_id          = module.managed_identity.id
@@ -192,11 +134,5 @@ module "container_apps" {
   depends_on = [
     azurerm_role_assignment.acr_pull,
     azurerm_role_assignment.kv_secrets_user,
-    azurerm_key_vault_secret.db_host,
-    azurerm_key_vault_secret.db_port,
-    azurerm_key_vault_secret.db_user,
-    azurerm_key_vault_secret.db_password,
-    azurerm_key_vault_secret.db_name,
-    azurerm_key_vault_secret.db_schema,
   ]
 }

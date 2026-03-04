@@ -28,16 +28,6 @@ output "frontend_url" {
   value       = module.container_apps.frontend_url
 }
 
-output "postgres_server_fqdn" {
-  description = "FQDN of the PostgreSQL Flexible Server"
-  value       = module.postgres.fqdn
-}
-
-output "postgres_db_name" {
-  description = "Name of the PostgreSQL database"
-  value       = module.postgres.db_name
-}
-
 output "container_app_environment_domain" {
   description = "Default domain of the Container App Environment"
   value       = module.container_app_environment.default_domain

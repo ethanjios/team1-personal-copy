@@ -1,3 +1,57 @@
+locals {
+  db_host     = "${var.postgres_name}.internal.${var.env_default_domain}"
+  db_user     = "team1"
+  db_password = "team1pass"
+  db_name     = "team1"
+}
+
+# -------------------------------------------------------------------
+# PostgreSQL Container App — internal only
+# Resets on restart; backend runs migrations on startup via entrypoint.sh
+# -------------------------------------------------------------------
+resource "azurerm_container_app" "postgres" {
+  name                         = var.postgres_name
+  container_app_environment_id = var.container_app_environment_id
+  resource_group_name          = var.resource_group_name
+  revision_mode                = "Single"
+
+  ingress {
+    external_enabled = false
+    target_port      = 5432
+    transport        = "tcp"
+
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
+  template {
+    min_replicas = 1
+    max_replicas = 1
+
+    container {
+      name   = "postgres"
+      image  = "postgres:16"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      env {
+        name  = "POSTGRES_USER"
+        value = local.db_user
+      }
+      env {
+        name  = "POSTGRES_PASSWORD"
+        value = local.db_password
+      }
+      env {
+        name  = "POSTGRES_DB"
+        value = local.db_name
+      }
+    }
+  }
+}
+
 # -------------------------------------------------------------------
 # Backend Container App — internal only (not exposed to the internet)
 # -------------------------------------------------------------------
@@ -57,31 +111,33 @@ resource "azurerm_container_app" "backend" {
         value = var.enable_add_job_role
       }
 
-      # ---- Secrets pulled from Key Vault at runtime ----
+      # ---- DB connection — internal postgres CA, plain env vars ----
       env {
-        name        = "DB_USER"
-        secret_name = "db-user"
+        name  = "DB_HOST"
+        value = local.db_host
       }
       env {
-        name        = "DB_PASSWORD"
-        secret_name = "db-password"
+        name  = "DB_PORT"
+        value = "5432"
       }
       env {
-        name        = "DB_HOST"
-        secret_name = "db-host"
+        name  = "DB_USER"
+        value = local.db_user
       }
       env {
-        name        = "DB_PORT"
-        secret_name = "db-port"
+        name  = "DB_PASSWORD"
+        value = local.db_password
       }
       env {
-        name        = "DB_NAME"
-        secret_name = "db-name"
+        name  = "DB_NAME"
+        value = local.db_name
       }
       env {
-        name        = "DB_SCHEMA"
-        secret_name = "db-schema"
+        name  = "DB_SCHEMA"
+        value = "public"
       }
+
+      # ---- Secrets from Key Vault (non-DB) ----
       env {
         name        = "JWT_SECRET"
         secret_name = "jwt-secret"
@@ -105,38 +161,7 @@ resource "azurerm_container_app" "backend" {
     }
   }
 
-  # Key Vault secret references — fetched using the managed identity
-  # Secret names in Key Vault must be created manually in the portal first
-  secret {
-    name                = "db-user"
-    key_vault_secret_id = "${var.key_vault_uri}secrets/DbUser"
-    identity            = var.managed_identity_id
-  }
-  secret {
-    name                = "db-password"
-    key_vault_secret_id = "${var.key_vault_uri}secrets/DbPassword"
-    identity            = var.managed_identity_id
-  }
-  secret {
-    name                = "db-host"
-    key_vault_secret_id = "${var.key_vault_uri}secrets/DbHost"
-    identity            = var.managed_identity_id
-  }
-  secret {
-    name                = "db-port"
-    key_vault_secret_id = "${var.key_vault_uri}secrets/DbPort"
-    identity            = var.managed_identity_id
-  }
-  secret {
-    name                = "db-name"
-    key_vault_secret_id = "${var.key_vault_uri}secrets/DbName"
-    identity            = var.managed_identity_id
-  }
-  secret {
-    name                = "db-schema"
-    key_vault_secret_id = "${var.key_vault_uri}secrets/DbSchema"
-    identity            = var.managed_identity_id
-  }
+  # Key Vault secret references (non-DB only)
   secret {
     name                = "jwt-secret"
     key_vault_secret_id = "${var.key_vault_uri}secrets/JwtSecret"
@@ -162,6 +187,8 @@ resource "azurerm_container_app" "backend" {
     key_vault_secret_id = "${var.key_vault_uri}secrets/S3BucketName"
     identity            = var.managed_identity_id
   }
+
+  depends_on = [azurerm_container_app.postgres]
 }
 
 # -------------------------------------------------------------------
