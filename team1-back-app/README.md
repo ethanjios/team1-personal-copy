@@ -7,7 +7,7 @@ npm install
 cp .env.example .env
 npm run dev
 ```
- 
+
 **Configure .env with your frontend connection**
 FRONTEND_URL="http://localhost:<FRONTEND_PORT>"
 
