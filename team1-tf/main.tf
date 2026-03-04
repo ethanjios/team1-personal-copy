@@ -23,10 +23,6 @@ provider "azurerm" {
   subscription_id = var.subscription_id
 }
 
-# Resolves the identity running Terraform (user locally, SP in CI)
-# Used to grant Key Vault Secrets Officer so Terraform can write DB secrets
-data "azurerm_client_config" "current" {}
-
 locals {
   # Short identifier for resources with strict name-length limits (e.g. Key Vault: max 24 chars)
   short_id = "team1ec"
@@ -87,16 +83,6 @@ module "postgres" {
 }
 
 # ---------------------------------------------------------------
-# Grant the identity running Terraform write access to Key Vault
-# so it can populate DB secrets from Terraform
-# ---------------------------------------------------------------
-resource "azurerm_role_assignment" "terraform_kv_admin" {
-  scope                = module.key_vault.id
-  role_definition_name = "Key Vault Secrets Officer"
-  principal_id         = data.azurerm_client_config.current.object_id
-}
-
-# ---------------------------------------------------------------
 # DB secrets in Key Vault — managed by Terraform
 # Overwrites the placeholder values set during initial setup
 # ---------------------------------------------------------------
@@ -104,42 +90,36 @@ resource "azurerm_key_vault_secret" "db_host" {
   name         = "DbHost"
   value        = module.postgres.fqdn
   key_vault_id = module.key_vault.id
-  depends_on   = [azurerm_role_assignment.terraform_kv_admin]
 }
 
 resource "azurerm_key_vault_secret" "db_port" {
   name         = "DbPort"
   value        = tostring(module.postgres.port)
   key_vault_id = module.key_vault.id
-  depends_on   = [azurerm_role_assignment.terraform_kv_admin]
 }
 
 resource "azurerm_key_vault_secret" "db_user" {
   name         = "DbUser"
   value        = module.postgres.admin_login
   key_vault_id = module.key_vault.id
-  depends_on   = [azurerm_role_assignment.terraform_kv_admin]
 }
 
 resource "azurerm_key_vault_secret" "db_password" {
   name         = "DbPassword"
   value        = module.postgres.admin_password
   key_vault_id = module.key_vault.id
-  depends_on   = [azurerm_role_assignment.terraform_kv_admin]
 }
 
 resource "azurerm_key_vault_secret" "db_name" {
   name         = "DbName"
   value        = module.postgres.db_name
   key_vault_id = module.key_vault.id
-  depends_on   = [azurerm_role_assignment.terraform_kv_admin]
 }
 
 resource "azurerm_key_vault_secret" "db_schema" {
   name         = "DbSchema"
   value        = "public"
   key_vault_id = module.key_vault.id
-  depends_on   = [azurerm_role_assignment.terraform_kv_admin]
 }
 
 # ---------------------------------------------------------------
