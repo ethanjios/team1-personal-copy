@@ -39,6 +39,11 @@ resource "azurerm_postgresql_flexible_server" "this" {
   geo_redundant_backup_enabled = false
 
   tags = var.tags
+
+  lifecycle {
+    # Zone is assigned by Azure on first creation and can't be freely changed
+    ignore_changes = [zone]
+  }
 }
 
 # Allow connections from other Azure services (e.g. Container Apps)
