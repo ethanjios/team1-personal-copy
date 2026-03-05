@@ -12,7 +12,7 @@ COPY src/ ./src/
 RUN npm run build
 
 # Bundle the seed script so we can run it with plain node (no tsx needed)
-RUN npx esbuild prisma/test-scripts/seed-test-db-v2.ts --bundle --platform=node --outfile=dist/seed.js --packages=external
+RUN npx esbuild prisma/test-scripts/seed-test-db-v2.ts --bundle --platform=node --format=cjs --outfile=dist/seed.cjs --packages=external
 
 
 # Stage 2: Production
@@ -36,7 +36,7 @@ COPY prisma/migrations ./prisma/migrations
 COPY prisma.config.ts ./
 
 # Bundled seed script (built by esbuild in builder stage)
-COPY --from=builder /app/dist/seed.js ./dist/seed.js
+COPY --from=builder /app/dist/seed.cjs ./dist/seed.cjs
 
 # Startup script: migrate then start
 COPY entrypoint.sh ./
