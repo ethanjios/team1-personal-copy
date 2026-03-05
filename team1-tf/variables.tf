@@ -68,11 +68,11 @@ variable "postgres_image" {
 variable "enable_job_applications" {
   description = "Enable the job applications feature (true/false)"
   type        = string
-  default     = "false"
+  default     = "true"
 }
 
 variable "enable_add_job_role" {
   description = "Enable the add job role feature (true/false)"
   type        = string
-  default     = "false"
+  default     = "true"
 }

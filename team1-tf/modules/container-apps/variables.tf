@@ -56,11 +56,11 @@ variable "env_default_domain" {
 variable "enable_job_applications" {
   description = "Feature flag: enable job applications"
   type        = string
-  default     = "false"
+  default     = "true"
 }
 
 variable "enable_add_job_role" {
   description = "Feature flag: enable adding job roles"
   type        = string
-  default     = "false"
+  default     = "true"
 }
