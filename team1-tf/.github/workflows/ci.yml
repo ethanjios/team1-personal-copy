@@ -1,0 +1,66 @@
+# ─────────────────────────────────────────────────────────────
+# Terraform Deploy  –  plan & apply infrastructure
+# ─────────────────────────────────────────────────────────────
+# Triggered by:
+#   1. Push to main        – applies with :latest image tags
+#   2. Pull request        – plan only (no apply)
+#   3. repository_dispatch – from back-app or front-app repos
+#      with client_payload containing image tags
+#
+# Required GitHub Secrets:
+#   AZURE_CLIENT_ID       – Service principal app (client) ID
+#   AZURE_CLIENT_SECRET   – Service principal password
+#   AZURE_TENANT_ID       – Azure AD tenant ID
+#   AZURE_SUBSCRIPTION_ID – Azure subscription ID
+#   TF_BACKEND_ACCESS_KEY – Storage account key for TF state
+# ─────────────────────────────────────────────────────────────
+
+name: Terraform Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  repository_dispatch:
+    types: [deploy]
+
+jobs:
+  terraform:
+    name: Plan & Apply
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_ACCESS_KEY: ${{ secrets.TF_BACKEND_ACCESS_KEY }}
+      TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_project: team1-ethan-campbell
+      TF_VAR_location: uksouth
+      TF_VAR_environment: dev
+      # Image tags: use dispatch payload when available, otherwise :latest
+      TF_VAR_backend_image: ${{ github.event.client_payload.backend_image || 'ethan-campbell/team1-back-app:latest' }}
+      TF_VAR_frontend_image: ${{ github.event.client_payload.frontend_image || 'ethan-campbell/team1-front-app:latest' }}
+      TF_VAR_postgres_image: ${{ github.event.client_payload.postgres_image || 'ethan-campbell/team1-postgres-app:latest' }}
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan -input=false -out=tfplan
+
+    - name: Terraform Apply
+      if: github.event_name != 'pull_request'
+      run: terraform apply -input=false -auto-approve tfplan
