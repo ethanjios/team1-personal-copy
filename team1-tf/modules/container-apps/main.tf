@@ -1,8 +1,55 @@
 locals {
-  db_host     = "localhost"
+  db_host     = "${var.postgres_name}.internal.${var.env_default_domain}"
   db_user     = "team1"
   db_password = "team1pass"
   db_name     = "team1"
+}
+
+# -------------------------------------------------------------------
+# PostgreSQL Container App — internal only
+# -------------------------------------------------------------------
+resource "azurerm_container_app" "postgres" {
+  name                         = var.postgres_name
+  container_app_environment_id = var.container_app_environment_id
+  resource_group_name          = var.resource_group_name
+  revision_mode                = "Single"
+
+  ingress {
+    external_enabled = false
+    target_port      = 5432
+    exposed_port     = 5432
+    transport        = "tcp"
+
+    traffic_weight {
+      latest_revision = true
+      percentage      = 100
+    }
+  }
+
+  template {
+    min_replicas = 1
+    max_replicas = 1
+
+    container {
+      name   = "postgres"
+      image  = "postgres:16"
+      cpu    = 0.25
+      memory = "0.5Gi"
+
+      env {
+        name  = "POSTGRES_USER"
+        value = local.db_user
+      }
+      env {
+        name  = "POSTGRES_PASSWORD"
+        value = local.db_password
+      }
+      env {
+        name  = "POSTGRES_DB"
+        value = local.db_name
+      }
+    }
+  }
 }
 
 # -------------------------------------------------------------------
@@ -38,26 +85,6 @@ resource "azurerm_container_app" "backend" {
   template {
     min_replicas = 1
     max_replicas = 2
-
-    container {
-      name   = "postgres"
-      image  = "postgres:16"
-      cpu    = 0.25
-      memory = "0.5Gi"
-
-      env {
-        name  = "POSTGRES_USER"
-        value = local.db_user
-      }
-      env {
-        name  = "POSTGRES_PASSWORD"
-        value = local.db_password
-      }
-      env {
-        name  = "POSTGRES_DB"
-        value = local.db_name
-      }
-    }
 
     container {
       name   = "backend"
@@ -108,6 +135,10 @@ resource "azurerm_container_app" "backend" {
       env {
         name  = "DB_SCHEMA"
         value = "public"
+      }
+      env {
+        name  = "BCRYPT_SALT_ROUNDS"
+        value = "12"
       }
 
       # ---- Secrets from Key Vault (non-DB) ----
@@ -161,6 +192,7 @@ resource "azurerm_container_app" "backend" {
     identity            = var.managed_identity_id
   }
 
+  depends_on = [azurerm_container_app.postgres]
 }
 
 # -------------------------------------------------------------------

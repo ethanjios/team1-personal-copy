@@ -119,6 +119,7 @@ module "container_apps" {
 
   backend_name                 = "back-${local.short_id}-${var.environment}"
   frontend_name                = "front-${local.short_id}-${var.environment}"
+  postgres_name                = "db-${local.short_id}-${var.environment}"
   resource_group_name          = module.resource_group.name
   container_app_environment_id = module.container_app_environment.id
   managed_identity_id          = module.managed_identity.id
