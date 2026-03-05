@@ -24,13 +24,17 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder --chown=node:node /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=node:node /app/dist ./dist
 
-# Copy Prisma CLI, dotenv (devDeps, stripped above), and migrations so the
-# entrypoint can run `prisma migrate deploy` before starting the app
+# Copy Prisma CLI, tsx, dotenv (devDeps, stripped above), and migrations so the
+# entrypoint can run `prisma migrate deploy` and seed before starting the app
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
+COPY --from=builder /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
 COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
 COPY prisma/schema.prisma ./prisma/
 COPY prisma/migrations ./prisma/migrations
+COPY prisma/test-scripts ./prisma/test-scripts
+COPY src/utils/db-connection-generator.ts ./src/utils/
 COPY prisma.config.ts ./
 
 # Startup script: migrate then start
