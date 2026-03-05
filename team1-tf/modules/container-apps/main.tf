@@ -1,8 +1,6 @@
 locals {
-  db_host     = "localhost"
-  db_user     = "team1"
-  db_password = "team1pass"
-  db_name     = "team1"
+  db_host = "localhost"
+  db_name = "team1"
 }
 
 # -------------------------------------------------------------------
@@ -83,11 +81,11 @@ resource "azurerm_container_app" "backend" {
       }
       env {
         name  = "DB_USER"
-        value = local.db_user
+        value = var.db_user
       }
       env {
         name  = "DB_PASSWORD"
-        value = local.db_password
+        value = var.db_password
       }
       env {
         name  = "DB_NAME"

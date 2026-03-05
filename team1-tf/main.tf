@@ -130,6 +130,8 @@ module "container_apps" {
   env_default_domain           = module.container_app_environment.default_domain
   enable_job_applications      = var.enable_job_applications
   enable_add_job_role          = var.enable_add_job_role
+  db_user                      = var.db_user
+  db_password                  = var.db_password
 
   depends_on = [
     azurerm_role_assignment.acr_pull,

@@ -76,3 +76,18 @@ variable "enable_add_job_role" {
   type        = string
   default     = "true"
 }
+
+# ---------------------------------------------------------------
+# Database credentials — passed via TF_VAR_ secrets in CI
+# ---------------------------------------------------------------
+variable "db_user" {
+  description = "PostgreSQL database username"
+  type        = string
+  sensitive   = true
+}
+
+variable "db_password" {
+  description = "PostgreSQL database password"
+  type        = string
+  sensitive   = true
+}
