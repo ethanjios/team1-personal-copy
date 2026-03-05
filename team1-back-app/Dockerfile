@@ -11,6 +11,9 @@ COPY tsconfig.json ./
 COPY src/ ./src/
 RUN npm run build
 
+# Bundle the seed script so we can run it with plain node (no tsx needed)
+RUN npx esbuild prisma/test-scripts/seed-test-db-v2.ts --bundle --platform=node --outfile=dist/seed.js --packages=external
+
 
 # Stage 2: Production
 FROM node:22-alpine AS production
@@ -24,20 +27,16 @@ RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=builder --chown=node:node /app/node_modules/.prisma ./node_modules/.prisma
 COPY --from=builder --chown=node:node /app/dist ./dist
 
-# Copy Prisma CLI, tsx, dotenv (devDeps, stripped above), and migrations so the
-# entrypoint can run `prisma migrate deploy` and seed before starting the app
+# Copy Prisma CLI, dotenv, and migrations for `prisma migrate deploy`
 COPY --from=builder /app/node_modules/prisma ./node_modules/prisma
 COPY --from=builder /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder /app/node_modules/tsx ./node_modules/tsx
-COPY --from=builder /app/node_modules/.bin/tsx ./node_modules/.bin/tsx
-COPY --from=builder /app/node_modules/esbuild ./node_modules/esbuild
-COPY --from=builder /app/node_modules/@esbuild ./node_modules/@esbuild
 COPY --from=builder /app/node_modules/dotenv ./node_modules/dotenv
 COPY prisma/schema.prisma ./prisma/
 COPY prisma/migrations ./prisma/migrations
-COPY prisma/test-scripts ./prisma/test-scripts
-COPY src/utils/db-connection-generator.ts ./src/utils/
 COPY prisma.config.ts ./
+
+# Bundled seed script (built by esbuild in builder stage)
+COPY --from=builder /app/dist/seed.js ./dist/seed.js
 
 # Startup script: migrate then start
 COPY entrypoint.sh ./
