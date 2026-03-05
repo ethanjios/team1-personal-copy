@@ -56,6 +56,12 @@ variable "frontend_image" {
   default     = "ethan-campbell/team1-front-app:latest"
 }
 
+variable "postgres_image" {
+  description = "Image path within ACR for postgres (e.g. ethan-campbell/team1-postgres-app:latest)"
+  type        = string
+  default     = "ethan-campbell/team1-postgres-app:latest"
+}
+
 # ---------------------------------------------------------------
 # Feature flags — toggle application features without redeploying code
 # ---------------------------------------------------------------

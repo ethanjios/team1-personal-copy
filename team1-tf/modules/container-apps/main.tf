@@ -42,22 +42,9 @@ resource "azurerm_container_app" "backend" {
 
     container {
       name   = "postgres"
-      image  = "postgres:16"
+      image  = "${var.acr_login_server}/${var.postgres_image}"
       cpu    = 0.25
       memory = "0.5Gi"
-
-      env {
-        name  = "POSTGRES_USER"
-        value = local.db_user
-      }
-      env {
-        name  = "POSTGRES_PASSWORD"
-        value = local.db_password
-      }
-      env {
-        name  = "POSTGRES_DB"
-        value = local.db_name
-      }
     }
 
     container {

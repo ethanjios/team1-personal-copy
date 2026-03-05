@@ -4,9 +4,11 @@ on:
   push:
     paths:
       - 'team1-front-app/**'
+      - 'team1-tf/**'
   pull_request:
     paths:
       - 'team1-front-app/**'
+      - 'team1-tf/**'
 
 env:
   ACR_REGISTRY: academyacrj3r5dv.azurecr.io
@@ -73,3 +75,45 @@ jobs:
         docker tag ${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
         docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
+
+  terraform:
+    name: Terraform Plan / Apply
+    runs-on: ubuntu-latest
+    needs: build
+    defaults:
+      run:
+        working-directory: team1-tf
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_ACCESS_KEY: ${{ secrets.TF_BACKEND_ACCESS_KEY }}
+      TF_VAR_subscription_id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      TF_VAR_project: team1-ethan-campbell
+      TF_VAR_location: uksouth
+      TF_VAR_environment: dev
+      TF_VAR_frontend_image: ethan-campbell/team1-front-app:${{ github.sha }}
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+
+    - name: Terraform Init
+      run: terraform init
+
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive
+
+    - name: Terraform Validate
+      run: terraform validate
+
+    - name: Terraform Plan
+      run: terraform plan -input=false -out=tfplan
+
+    - name: Terraform Apply
+      if: github.ref == 'refs/heads/main'
+      run: terraform apply -input=false -auto-approve tfplan

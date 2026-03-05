@@ -38,6 +38,11 @@ variable "frontend_image" {
   type        = string
 }
 
+variable "postgres_image" {
+  description = "Image path within ACR for postgres (e.g. ethan-campbell/team1-postgres-app:latest)"
+  type        = string
+}
+
 variable "key_vault_uri" {
   description = "URI of the Key Vault used for secrets (must end with /)"
   type        = string

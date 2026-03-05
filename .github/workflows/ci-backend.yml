@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - 'team1-back-app/**'
+      - 'team1-postgres-app/**'
       - 'team1-tf/**'
   pull_request:
     paths:
       - 'team1-back-app/**'
+      - 'team1-postgres-app/**'
       - 'team1-tf/**'
 
 env:
@@ -108,6 +110,18 @@ jobs:
         docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
         docker push ${{ env.ACR_REGISTRY }}/${{ env.IMAGE_NAME }}:latest
 
+    - name: Build Postgres Docker image
+      run: docker build --platform linux/amd64 -t ethan-campbell/team1-postgres-app:${{ github.sha }} .
+      working-directory: team1-postgres-app
+
+    - name: Tag and push Postgres image to ACR
+      if: github.ref == 'refs/heads/main'
+      run: |
+        docker tag ethan-campbell/team1-postgres-app:${{ github.sha }} ${{ env.ACR_REGISTRY }}/ethan-campbell/team1-postgres-app:${{ github.sha }}
+        docker tag ethan-campbell/team1-postgres-app:${{ github.sha }} ${{ env.ACR_REGISTRY }}/ethan-campbell/team1-postgres-app:latest
+        docker push ${{ env.ACR_REGISTRY }}/ethan-campbell/team1-postgres-app:${{ github.sha }}
+        docker push ${{ env.ACR_REGISTRY }}/ethan-campbell/team1-postgres-app:latest
+
   terraform:
     name: Terraform Plan / Apply
     runs-on: ubuntu-latest
@@ -126,6 +140,7 @@ jobs:
       TF_VAR_location: uksouth
       TF_VAR_environment: dev
       TF_VAR_backend_image: ethan-campbell/team1-back-app:${{ github.sha }}
+      TF_VAR_postgres_image: ethan-campbell/team1-postgres-app:${{ github.sha }}
 
     steps:
     - name: Checkout repository

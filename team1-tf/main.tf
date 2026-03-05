@@ -125,6 +125,7 @@ module "container_apps" {
   acr_login_server             = data.azurerm_container_registry.acr.login_server
   backend_image                = var.backend_image
   frontend_image               = var.frontend_image
+  postgres_image               = var.postgres_image
   key_vault_uri                = module.key_vault.vault_uri
   env_default_domain           = module.container_app_environment.default_domain
   enable_job_applications      = var.enable_job_applications
