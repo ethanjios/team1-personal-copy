@@ -4,7 +4,7 @@ Team 1 Infrastructure as Code — Terraform configuration for Azure resources.
 Manages infrastructure for both `team1-front-app` and `team1-back-app` in a single project, since both apps share the same resource group and environment.
 
 ## Structure
-
+ 
 | File | Purpose |
 |---|---|
 | `main.tf` | Provider config and resource definitions |
