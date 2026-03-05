@@ -8,11 +8,6 @@ variable "frontend_name" {
   type        = string
 }
 
-variable "postgres_name" {
-  description = "Name of the postgres Container App"
-  type        = string
-}
-
 variable "resource_group_name" {
   description = "Name of the resource group"
   type        = string
