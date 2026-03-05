@@ -125,6 +125,7 @@ jobs:
       TF_VAR_project: team1-ethan-campbell
       TF_VAR_location: uksouth
       TF_VAR_environment: dev
+      TF_VAR_backend_image: ethan-campbell/team1-back-app:${{ github.sha }}
 
     steps:
     - name: Checkout repository
